@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Expense Tracker - India</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- jsPDF library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- jsPDF autoTable plugin -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.7.0/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-group">
+                    <span class="logo-icon">
+                        <img src="web-icon.png" alt="Rupee Coin Logo" style="width:32px; height:32px; vertical-align:middle;">
+                    </span>
+                    <span class="logo-text">
+                        <span style="font-size:1.2rem; font-weight:700; color:#1976d2; font-family:'Segoe UI',Arial,sans-serif; letter-spacing:1px;">Expense Tracker</span><br>
+                        <span style="font-size:0.85rem; color:#888; font-family:'Segoe UI',Arial,sans-serif;">Personal Finance • India</span>
+                    </span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-btn active" data-view="dashboard">
+                    <span class="icon">📊</span> Dashboard
+                </button>
+                <button class="nav-btn" data-view="transactions">
+                    <span class="icon">📝</span> Transactions
+                </button>
+                <button class="nav-btn" data-view="analytics">
+                    <span class="icon">📈</span> Analytics
+                </button>
+                <button class="nav-btn" data-view="settings">
+                    <span class="icon">⚙️</span> Settings
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard View -->
+            <section id="dashboard" class="view active">
+                <header class="page-header">
+                    <h2>Dashboard</h2>
+                    <div class="header-controls">
+                        <input type="month" id="monthFilter" class="filter-input">
+                        <button class="btn btn-primary" id="addTransactionBtn">+ Add Transaction</button>
+                    </div>
+                </header>
+
+                <!-- Summary Cards -->
+                <div class="summary-cards">
+                    <div class="card card-income">
+                        <div class="card-header">
+                            <h3>Total Income</h3>
+                                <span class="icon-lg"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none"><text x="0" y="24" font-size="24" font-family="Arial, sans-serif" fill="#1976d2">₹</text></svg></span>
+                        </div>
+                        <p class="card-amount" id="totalIncome">₹0.00</p>
+                        <p class="card-label">This Month</p>
+                    </div>
+
+                    <div class="card card-expense">
+                        <div class="card-header">
+                            <h3>Total Expenses</h3>
+                                <span class="icon-lg"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none"><text x="0" y="24" font-size="24" font-family="Arial, sans-serif" fill="#d32f2f">₹</text></svg></span>
+                        </div>
+                        <p class="card-amount" id="totalExpense">₹0.00</p>
+                        <p class="card-label">This Month</p>
+                    </div>
+
+                    <div class="card card-balance">
+                        <div class="card-header">
+                            <h3>Balance</h3>
+                                <span class="icon-lg"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none"><rect x="4" y="10" width="24" height="14" rx="4" fill="#388e3c"/><rect x="4" y="8" width="24" height="6" rx="3" fill="#43a047"/><circle cx="24" cy="17" r="2" fill="#fff"/><text x="10" y="22" font-size="14" font-family="Arial, sans-serif" fill="#fff">₹</text></svg></span>
+                        </div>
+                        <p class="card-amount" id="totalBalance">₹0.00</p>
+                        <p class="card-label">This Month</p>
+                    </div>
+                </div>
+
+                <!-- Recent Transactions -->
+                <div class="card">
+                    <h3 class="section-title">Recent Transactions</h3>
+                    <div id="recentTransactions" class="transactions-list">
+                        <p class="empty-state">No transactions yet. Add one to get started!</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Transactions View -->
+            <section id="transactions" class="view">
+                <header class="page-header">
+                    <h2>All Transactions</h2>
+                    <button class="btn btn-primary" id="addTransactionBtn2">+ Add Transaction</button>
+                </header>
+
+                <!-- Filters -->
+                <div class="filters">
+                    <input type="text" id="searchInput" class="filter-input" placeholder="Search transactions...">
+                    <select id="categoryFilter" class="filter-input">
+                        <option value="">All Categories</option>
+                    </select>
+                    <select id="typeFilter" class="filter-input">
+                        <option value="">All Types</option>
+                        <option value="income">Income</option>
+                        <option value="expense">Expense</option>
+                    </select>
+                    <input type="date" id="startDateFilter" class="filter-input">
+                    <input type="date" id="endDateFilter" class="filter-input">
+                </div>
+
+                <!-- Transactions List -->
+                <div class="card">
+                    <div id="allTransactions" class="transactions-list">
+                        <p class="empty-state">No transactions found.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Analytics View -->
+            <section id="analytics" class="view">
+                <header class="page-header">
+                    <h2>Analytics & Reports</h2>
+                    <div class="header-controls">
+                        <button class="btn btn-secondary" id="exportCSVBtn">📥 Export CSV</button>
+                        <button class="btn btn-secondary" id="exportPDFBtn">📄 Export PDF</button>
+                    </div>
+                </header>
+
+                <!-- Chart Selection -->
+                <div class="chart-controls">
+                    <button class="chart-btn active" data-chart="pie">📊 Pie Chart</button>
+                    <button class="chart-btn" data-chart="bar">📊 Bar Chart </button>
+                    <button class="chart-btn" data-chart="line">📈 Line Chart </button>
+                </div>
+
+                <!-- Charts -->
+                <div class="charts-container">
+                    <div class="card">
+                        <h3 class="section-title">Expense Breakdown by Category</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="expenseChart" style="max-height: 300px;"></canvas>
+                            <canvas id="expenseBarChart" style="max-height: 300px; display:none;"></canvas>
+                            <canvas id="expenseLineChart" style="max-height: 300px; display:none;"></canvas>
+                        </div>
+                        <p id="pieChartEmpty" class="empty-state" style="display:none;">No expense data available</p>
+                        <p id="barCategoryEmpty" class="empty-state" style="display:none;">No expense data available</p>
+                        <p id="lineCategoryEmpty" class="empty-state" style="display:none;">No expense data available</p>
+                    </div>
+
+                    <div class="card">
+                        <h3 class="section-title">Income vs Expenses (Last 12 Months)</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="incomeExpenseChart" style="max-height: 300px;"></canvas>
+                            <canvas id="incomeExpenseBarChart" style="max-height: 300px; display:none;"></canvas>
+                            <canvas id="incomeExpenseLineChart" style="max-height: 300px; display:none;"></canvas>
+                        </div>
+                        <p id="barChartEmpty" class="empty-state" style="display:none;">No data available</p>
+                        <p id="incomeExpenseBarEmpty" class="empty-state" style="display:none;">No data available</p>
+                        <p id="incomeExpenseLineEmpty" class="empty-state" style="display:none;">No data available</p>
+                    </div>
+
+                    <div class="card">
+                        <h3 class="section-title">Daily Spending Trend (Last 30 Days)</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="trendChart" style="max-height: 300px;"></canvas>
+                        </div>
+                        <p id="lineChartEmpty" class="empty-state" style="display:none;">No data available</p>
+                    </div>
+                </div>
+
+                <!-- Statistics -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h4>Highest Expense Category</h4>
+                        <p id="topCategory" class="stat-value">-</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Average Daily Spending</h4>
+                        <p id="avgSpending" class="stat-value">-</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Total Transactions</h4>
+                        <p id="totalTransactions" class="stat-value">-</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Savings Rate</h4>
+                        <p id="savingsRate" class="stat-value">-</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings View -->
+            <section id="settings" class="view">
+                <header class="page-header">
+                    <h2>Settings</h2>
+                </header>
+
+                <div class="card">
+                    <h3 class="section-title">Expense Categories</h3>
+                    <div id="categoriesList" class="categories-list">
+                        <!-- Categories will be populated here -->
+                    </div>
+                    <div class="add-category-form">
+                        <input type="text" id="newCategoryInput" placeholder="New category name" class="filter-input">
+                        <button class="btn btn-secondary" id="addCategoryBtn">Add Category</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="section-title">Data Management</h3>
+                    <div class="data-management">
+                        <button class="btn btn-secondary" id="exportBtn">Export Data (JSON)</button>
+                        <button class="btn btn-secondary" id="exportCSVBtnSettings">Export Data (CSV)</button>
+                        <button class="btn btn-secondary" id="exportPDFBtnSettings">Export Data (PDF)</button>
+                        <button class="btn btn-danger" id="clearBtn">Clear All Data</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Transaction Modal -->
+    <div id="transactionModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close">&times;</button>
+            <h3>Add Transaction</h3>
+            <form id="transactionForm">
+                <div class="form-group">
+                    <label for="transactionDate">Date</label>
+                    <input type="date" id="transactionDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="transactionType">Type</label>
+                    <select id="transactionType" required>
+                        <option value="income">Income</option>
+                        <option value="expense">Expense</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="transactionCategory">Category</label>
+                    <select id="transactionCategory" required>
+                        <option value="">Select Category</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="transactionDescription">Description</label>
+                    <input type="text" id="transactionDescription" placeholder="Enter description">
+                </div>
+
+                <div class="form-group">
+                    <label for="transactionAmount">Amount (₹)</label>
+                    <input type="number" id="transactionAmount" placeholder="0.00" step="0.01" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Save Transaction</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
